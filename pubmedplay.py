@@ -31,7 +31,7 @@ def search(query,N):
 def mergeAbstract(abstract):
     return("".join(abstract))
 
-results = search('zebrafish',1000)
+results = search('zebrafish',500)
 id_list = results['IdList']
 papers = fetch_details(id_list)
 
@@ -49,12 +49,16 @@ tfidf = vect.fit_transform(listOfAbstracts)
 
 
 # Non-negative Matrix Factorization
-num_topics = 3
+num_topics = 2
 num_top_words = 5
 nmf = decomposition.NMF(n_components=num_topics, random_state=1)
 doctopic = nmf.fit_transform(tfidf)
 topic_words = []
 vocab = np.array(vect.get_feature_names())
+
+for topic in nmf.components_:
+    word_idx = np.argsort(topic)[::-1][0:num_top_words]
+    topic_words.append([vocab[i] for i in word_idx])
 
 # Coclustering
 cocluster = SpectralCoclustering(n_clusters=5,svd_method='arpack', random_state=0)
@@ -63,8 +67,3 @@ y_cocluster = cocluster.row_labels_
 x_cocluster = cocluster.column_labels_
 
 # print(np.array(vect.get_feature_names())[x_cocluster == 4])
-
-
-for topic in nmf.components_:
-    word_idx = np.argsort(topic)[::-1][0:num_top_words]
-    topic_words.append([vocab[i] for i in word_idx])
